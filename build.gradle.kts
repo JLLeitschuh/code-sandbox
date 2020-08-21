@@ -19,6 +19,7 @@ repositories {
 dependencies {
     implementation("com.google.guava:guava:29.0-jre")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
+    testImplementation("junit:junit:4.13")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 }
 

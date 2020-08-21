@@ -2,6 +2,7 @@ package org.jlleitschuh.sandbox;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,31 +22,43 @@ public class TempDirectoryPermissionsCheck {
     @Test
     void checkTempFileDefaultPermissions() throws IOException {
         File temp = File.createTempFile("random", "file");
+        // Issue this creates with permissions -> -rw-r--r--
         System.out.println("File Temp File: " + temp.getName());
-        runLS(temp.getParentFile());
+        runLS(temp.getParentFile(), temp);
     }
 
     @Test
     void checkTempCreateDirTempDefaultPermissions() throws IOException {
         Path temp = Files.createTempDirectory("random-directory");
+        // This creates with permissions -> drwx------
         System.out.println("Files Temp Dir: " + temp.getFileName());
-        runLS(temp.toFile().getParentFile());
+        runLS(temp.toFile().getParentFile(), temp.toFile());
         Path child = temp.resolve("jdk-child.txt");
         child.toFile().createNewFile();
-        runLS(temp.toFile());
+        runLS(temp.toFile(), child.toFile());
     }
 
     @Test
     void checkGuavaTempCreateTempDefaultPermissions() throws IOException {
         File guavaTempDir = com.google.common.io.Files.createTempDir();
+        // This creates with permissions -> drwxr-xr-x
         System.out.println("Guava Temp Dir: " + guavaTempDir.getName());
-        runLS(guavaTempDir.getParentFile());
+        runLS(guavaTempDir.getParentFile(), guavaTempDir);
         File child = new File(guavaTempDir, "guava-child.txt");
         child.createNewFile();
-        runLS(guavaTempDir);
+        runLS(guavaTempDir, child);
     }
 
-    private static void runLS(File file) {
+    @Test
+    void testJunitTempDir(@TempDir Path temp) throws IOException {
+        System.out.println("Files Temp Dir: " + temp.getFileName());
+        runLS(temp.toFile().getParentFile(), temp.toFile());
+        Path child = temp.resolve("jdk-child.txt");
+        child.toFile().createNewFile();
+        runLS(temp.toFile(), child.toFile());
+    }
+
+    private static void runLS(File file, File lookingFor) {
         ProcessBuilder processBuilder = new ProcessBuilder();
 
         processBuilder.command("ls", "-l", file.getAbsolutePath());
@@ -60,7 +73,12 @@ public class TempDirectoryPermissionsCheck {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                output.append(line + "\n");
+                if (line.contains("total")) {
+                    output.append(line + "\n");
+                }
+                if (line.contains(lookingFor.getName())) {
+                    output.append(line + "\n");
+                }
             }
 
             int exitVal = process.waitFor();
