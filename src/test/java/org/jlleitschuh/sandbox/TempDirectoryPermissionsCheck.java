@@ -19,24 +19,30 @@ public class TempDirectoryPermissionsCheck {
     }
 
     @Test
-    void checkTempDefaultPermissions() throws IOException {
+    void checkTempFileDefaultPermissions() throws IOException {
         File temp = File.createTempFile("random", "file");
         System.out.println("File Temp File: " + temp.getName());
         runLS(temp.getParentFile());
     }
 
     @Test
-    void checkTempCreateTempDefaultPermissions() throws IOException {
+    void checkTempCreateDirTempDefaultPermissions() throws IOException {
         Path temp = Files.createTempDirectory("random-directory");
         System.out.println("Files Temp Dir: " + temp.getFileName());
         runLS(temp.toFile().getParentFile());
+        Path child = temp.resolve("jdk-child.txt");
+        child.toFile().createNewFile();
+        runLS(temp.toFile());
     }
 
     @Test
-    void checkGuavaTempCreateTempDefaultPermissions() {
+    void checkGuavaTempCreateTempDefaultPermissions() throws IOException {
         File guavaTempDir = com.google.common.io.Files.createTempDir();
         System.out.println("Guava Temp Dir: " + guavaTempDir.getName());
         runLS(guavaTempDir.getParentFile());
+        File child = new File(guavaTempDir, "guava-child.txt");
+        child.createNewFile();
+        runLS(guavaTempDir);
     }
 
     private static void runLS(File file) {
