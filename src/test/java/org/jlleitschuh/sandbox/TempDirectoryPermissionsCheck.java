@@ -36,7 +36,7 @@ public class TempDirectoryPermissionsCheck {
     void checkGuavaTempCreateTempDefaultPermissions() {
         File guavaTempDir = com.google.common.io.Files.createTempDir();
         System.out.println("Guava Temp Dir: " + guavaTempDir.getName());
-        runLS(guavaTempDir);
+        runLS(guavaTempDir.getParentFile());
     }
 
     private static void runLS(File file) {

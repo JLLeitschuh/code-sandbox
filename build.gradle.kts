@@ -25,13 +25,13 @@ dependencies {
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     testLogging {
-        showStackTraces = true
-        showStandardStreams = true
         events  = setOf(
             TestLogEvent.STARTED,
             TestLogEvent.SKIPPED,
             TestLogEvent.PASSED,
             TestLogEvent.FAILED
         )
+        showStackTraces = true
+        showStandardStreams = true
     }
 }
