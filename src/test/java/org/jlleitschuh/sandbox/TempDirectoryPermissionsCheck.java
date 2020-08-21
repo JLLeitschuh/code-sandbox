@@ -29,7 +29,7 @@ public class TempDirectoryPermissionsCheck {
     void checkTempCreateTempDefaultPermissions() throws IOException {
         Path temp = Files.createTempDirectory("random-directory");
         System.out.println("Files Temp Dir: " + temp.getFileName());
-        runLS(temp.toFile());
+        runLS(temp.toFile().getParentFile());
     }
 
     @Test
