@@ -1,6 +1,7 @@
 package org.jlleitschuh.sandbox;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,21 +11,29 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class TempDirectoryPermissionsCheck {
+
+    @AfterEach
+    void afterEach() {
+        System.out.flush();
+        System.err.flush();
+    }
+
     @Test
-    public void checkTempDefaultPermissions() throws IOException {
+    void checkTempDefaultPermissions() throws IOException {
         File temp = File.createTempFile("random", "file");
+        System.out.println("File Temp File: " + temp.getName());
         runLS(temp.getParentFile());
     }
 
     @Test
-    public void checkTempCreateTempDefaultPermissions() throws IOException {
-        Path temp = Files.createTempDirectory("random");
+    void checkTempCreateTempDefaultPermissions() throws IOException {
+        Path temp = Files.createTempDirectory("random-directory");
         System.out.println("Files Temp Dir: " + temp.getFileName());
         runLS(temp.toFile());
     }
 
     @Test
-    public void guavaTempCreateTempDefaultPermissions() {
+    void checkGuavaTempCreateTempDefaultPermissions() {
         File guavaTempDir = com.google.common.io.Files.createTempDir();
         System.out.println("Guava Temp Dir: " + guavaTempDir.getName());
         runLS(guavaTempDir);
