@@ -8,6 +8,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     `java-library`
+    kotlin("jvm") version "1.4.10"
 }
 
 repositories {
@@ -17,6 +18,7 @@ repositories {
 }
 
 dependencies {
+    implementation(kotlin("stdlib"))
     implementation("com.google.guava:guava:29.0-jre")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
     testImplementation("junit:junit:4.13")

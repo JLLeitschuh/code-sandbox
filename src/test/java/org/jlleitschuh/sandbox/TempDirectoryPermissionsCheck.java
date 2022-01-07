@@ -6,10 +6,15 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.EnumSet;
 
 public class TempDirectoryPermissionsCheck {
 
@@ -22,7 +27,8 @@ public class TempDirectoryPermissionsCheck {
     @Test
     void checkTempFileDefaultPermissions() throws IOException {
         File temp = File.createTempFile("random", "file");
-        // Issue this creates with permissions -> -rw-r--r--
+        System.out.println(temp.getCanonicalPath());
+        // This creates with permissions -> -rw-r--r--
         System.out.println("File Temp File: " + temp.getName());
         runLS(temp.getParentFile(), temp);
     }
@@ -36,6 +42,22 @@ public class TempDirectoryPermissionsCheck {
         Path child = temp.resolve("jdk-child.txt");
         child.toFile().createNewFile();
         runLS(temp.toFile(), child.toFile());
+    }
+
+    @Test
+    void checkTempCreateTempFile() throws IOException {
+        Path tempFile = Files.createTempFile("random-file", ".txt");
+        // This creates with permissions -> -rw-------
+        System.out.println("Files Temp Dir: " + tempFile.getFileName());
+        runLS(tempFile.toFile().getParentFile(), tempFile.toFile());
+    }
+
+    @Test
+    void checkTempNewFile() throws IOException {
+        File tmpFile = new File(System.getProperty("java.io.tmpdir"));
+        File theFile = new File(tmpFile, "/test_subdir");
+        theFile.mkdir();
+        runLS(tmpFile, theFile);
     }
 
     @Test
@@ -56,6 +78,62 @@ public class TempDirectoryPermissionsCheck {
         Path child = temp.resolve("jdk-child.txt");
         child.toFile().createNewFile();
         runLS(temp.toFile(), child.toFile());
+    }
+
+    @Test
+    void checkTempFilesExplicitPermissions() throws IOException {
+        Path temp = Files.createTempDirectory("random-directory", PosixFilePermissions.asFileAttribute(EnumSet.allOf(PosixFilePermission.class)));
+        // This creates with permissions -> drwxr-xr-x
+        System.out.println("Files Temp Dir: " + temp.getFileName());
+        runLS(temp.toFile().getParentFile(), temp.toFile());
+        Path child = temp.resolve("jdk-child.txt");
+        child.toFile().createNewFile();
+        runLS(temp.toFile(), child.toFile());
+    }
+
+    @Test
+    void checkTempFilesCreateOutputStream() throws IOException {
+        File temp = File.createTempFile("random", "file");
+        try (FileWriter writer = new FileWriter(temp)) {
+            writer.write("Contents\n");
+        }
+        try(PrintWriter s = new PrintWriter(Files.newOutputStream(temp.toPath()))) {
+            s.println("Another line\n");
+        }
+        // This creates with permissions -> -rw-r--r--
+        System.out.println("File Temp File: " + temp.getName());
+        runLS(temp.getParentFile(), temp);
+        System.out.println("File contents:");
+        Files.readAllLines(temp.toPath()).forEach(line -> System.out.println('\t' + line));
+    }
+
+    @Test
+    void checkIfNewOutputStreamChangesFilePermissions() throws IOException {
+        File myFile = new File("test-file.txt");
+        try(PrintWriter s = new PrintWriter(Files.newOutputStream(myFile.toPath()))) {
+            s.println("Another line\n");
+        }
+    }
+
+    @Test
+    void checkFileCreateDirectoryPermissions() throws IOException {
+        File tempDirChild = new File(System.getProperty("java.io.tmpdir"), "/child-create-directory");
+        Files.createDirectory(tempDirChild.toPath()); // Creates with permissions 'drwxr-xr-x'
+        runLS(tempDirChild.getParentFile(), tempDirChild);
+    }
+
+    @Test
+    void checkFileCreateDirectoriesPermissions() throws IOException {
+        File tempDirChild = new File(System.getProperty("java.io.tmpdir"), "/child-create-directories/child");
+        Files.createDirectories(tempDirChild.toPath());
+        runLS(tempDirChild.getParentFile(), tempDirChild);
+    }
+
+    @Test
+    void checkFileCreateFilePermissions() throws IOException {
+        File tempDirChildFile = new File(System.getProperty("java.io.tmpdir"), "/child-create-file.txt");
+        Files.createFile(tempDirChildFile.toPath());
+        runLS(tempDirChildFile.getParentFile(), tempDirChildFile); // Creates with permissions '-rw-r--r--'
     }
 
     private static void runLS(File file, File lookingFor) {

