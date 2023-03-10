@@ -10,10 +10,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 public class TempDirectoryPermissionsCheck {
@@ -56,7 +59,7 @@ public class TempDirectoryPermissionsCheck {
     void checkTempNewFile() throws IOException {
         File tmpFile = new File(System.getProperty("java.io.tmpdir"));
         File theFile = new File(tmpFile, "/test_subdir");
-        theFile.mkdir();
+        theFile.mkdir(); // This creates with permissions -> drwxr-xr-x
         runLS(tmpFile, theFile);
     }
 
@@ -134,6 +137,17 @@ public class TempDirectoryPermissionsCheck {
         File tempDirChildFile = new File(System.getProperty("java.io.tmpdir"), "/child-create-file.txt");
         Files.createFile(tempDirChildFile.toPath());
         runLS(tempDirChildFile.getParentFile(), tempDirChildFile); // Creates with permissions '-rw-r--r--'
+    }
+
+    @Test
+    void checkFilesWriteCreateFilePermissions() throws IOException {
+        File tempDirChildVuln = new File(System.getProperty("java.io.tmpdir"), "/child-files-write.txt");
+        Files.write(tempDirChildVuln.toPath(),
+            Arrays.asList("secret"),
+            StandardCharsets.UTF_8,
+            StandardOpenOption.CREATE
+        ); // Creates file with permissions '-rw-r--r--'
+        runLS(tempDirChildVuln.getParentFile(), tempDirChildVuln);
     }
 
     private static void runLS(File file, File lookingFor) {

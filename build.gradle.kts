@@ -8,7 +8,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     `java-library`
-    kotlin("jvm") version "1.4.10"
+    kotlin("jvm") version "1.6.0"
 }
 
 repositories {
@@ -19,9 +19,11 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("org.yaml:snakeyaml:1.33")
     implementation("com.google.guava:guava:29.0-jre")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
     testImplementation("junit:junit:4.13")
+    testImplementation("com.oracle.nosql.sdk:nosqldriver:5.2.29")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 }
 
