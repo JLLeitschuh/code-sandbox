@@ -1,0 +1,3 @@
+# Self Test
+User-agent: JLLeitschuh/security-research
+Disallow: *
